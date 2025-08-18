@@ -15,10 +15,14 @@ function App() {
     loadFromFile,
     isElectron,
     exportNotes,
-    importNotes
+    importNotes,
+    initFromLocalStorage
   } = useStore();
 
   useEffect(() => {
+    // Initialize from localStorage first (for web version)
+    initFromLocalStorage();
+    
     // Apply initial theme
     applyThemeToCSS(currentTheme);
     

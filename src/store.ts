@@ -80,6 +80,17 @@ type Store = {
   getGraphConnections: () => GraphConnection[];
   linkNotes: (noteId1: string, noteId2: string) => void;
   unlinkNotes: (noteId1: string, noteId2: string) => void;
+
+  // File system operations for Electron
+  isElectron: () => boolean;
+  saveToFile: () => Promise<void>;
+  loadFromFile: () => Promise<void>;
+  exportNotes: (filePath?: string) => Promise<any>;
+  importNotes: (filePath: string) => Promise<void>;
+  
+  // localStorage operations for web version
+  initFromLocalStorage: () => void;
+  saveToLocalStorage: () => void;
 };
 
 export const useStore = create<Store>((set, get) => ({
@@ -153,7 +164,7 @@ export const useStore = create<Store>((set, get) => ({
       id: Date.now().toString(),
       title: "untitled note",
       content: "",
-      folderId: folderId || get().selectedFolderId,
+      folderId: folderId !== undefined ? folderId : get().selectedFolderId,
       tags: [],
       links: [],
       backlinks: [],
@@ -166,6 +177,7 @@ export const useStore = create<Store>((set, get) => ({
       selectedNoteId: newNote.id,
     }));
     get().saveToFile();
+    get().saveToLocalStorage();
   },
 
   updateNote: (id, updates) => {
@@ -177,6 +189,7 @@ export const useStore = create<Store>((set, get) => ({
       ),
     }));
     get().saveToFile();
+    get().saveToLocalStorage();
   },
 
   deleteNote: (id) => {
@@ -184,9 +197,13 @@ export const useStore = create<Store>((set, get) => ({
       notes: state.notes.filter((note) => note.id !== id),
       selectedNoteId: state.selectedNoteId === id ? null : state.selectedNoteId,
     }));
+    get().saveToLocalStorage();
   },
 
-  selectNote: (id) => set({ selectedNoteId: id }),
+  selectNote: (id) => {
+    set({ selectedNoteId: id });
+    get().saveToLocalStorage();
+  },
 
   setSearchTerm: (term) => set({ searchTerm: term }),
 
@@ -217,7 +234,9 @@ export const useStore = create<Store>((set, get) => ({
     };
     set((state) => ({
       folders: [...state.folders, newFolder],
+      selectedFolderId: newFolder.id,
     }));
+    get().saveToLocalStorage();
   },
 
   updateFolder: (id, updates) => {
@@ -237,7 +256,10 @@ export const useStore = create<Store>((set, get) => ({
     }));
   },
 
-  selectFolder: (id) => set({ selectedFolderId: id }),
+  selectFolder: (id) => {
+    set({ selectedFolderId: id });
+    get().saveToLocalStorage();
+  },
 
   getFolderTree: () => {
     const state = get();
@@ -254,6 +276,14 @@ export const useStore = create<Store>((set, get) => ({
   setTheme: (theme) => {
     set({ currentTheme: theme });
     get().applyThemeToCSS(theme);
+    
+    // Save to localStorage for web version
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('rob-yyn-notes-theme', JSON.stringify(theme));
+    }
+    
+    // Save to file for Electron version
+    get().saveToFile();
   },
 
   toggleThemeCustomizer: () => {
@@ -363,7 +393,7 @@ export const useStore = create<Store>((set, get) => ({
 
   // File system operations for Electron
   isElectron: () => {
-    return typeof window !== 'undefined' && window.electronAPI;
+    return typeof window !== 'undefined' && !!window.electronAPI;
   },
 
   saveToFile: async () => {
@@ -441,6 +471,55 @@ export const useStore = create<Store>((set, get) => ({
       }
     } catch (error) {
       console.error('Failed to import notes:', error);
+    }
+  },
+
+  // Initialize from localStorage
+  initFromLocalStorage: () => {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      // Load theme from localStorage
+      const savedTheme = localStorage.getItem('rob-yyn-notes-theme');
+      if (savedTheme) {
+        const theme = JSON.parse(savedTheme);
+        set({ currentTheme: theme });
+        get().applyThemeToCSS(theme);
+      }
+
+      // Load notes and folders from localStorage for web version
+      const savedNotes = localStorage.getItem('rob-yyn-notes-data');
+      if (savedNotes) {
+        const data = JSON.parse(savedNotes);
+        set({
+          notes: data.notes || [],
+          folders: data.folders || [],
+          selectedNoteId: data.selectedNoteId || null,
+          selectedFolderId: data.selectedFolderId || null
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load from localStorage:', error);
+    }
+  },
+
+  // Save to localStorage for web version
+  saveToLocalStorage: () => {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      const state = get();
+      const dataToSave = {
+        notes: state.notes,
+        folders: state.folders,
+        selectedNoteId: state.selectedNoteId,
+        selectedFolderId: state.selectedFolderId,
+        version: '1.1.0',
+        lastSaved: new Date().toISOString()
+      };
+      localStorage.setItem('rob-yyn-notes-data', JSON.stringify(dataToSave));
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error);
     }
   },
 }));
