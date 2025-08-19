@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
-APP="${1:-}"; VER="${2:-}"; shift 2 || true
+APP="${1:-}"; VER="${2:-}"; 
+shift 2 || true
+# Skip "--" if present
+if [[ "${1:-}" == "--" ]]; then shift; fi
 if [[ -z "$APP" || -z "$VER" ]]; then
-  echo "Usage: $0 <app-name> <version> -- <command...>"; exit 1; fi
+  echo "Usage: $0 <app-name> <version> [-- <command...>]"; exit 1; fi
 TAG="${APP}-v${VER}"; WT_DIR=".worktrees/${TAG}"
 git rev-parse "refs/tags/${TAG}" >/dev/null 2>&1 || { echo "Tag ${TAG} not found"; exit 1; }
 [[ -d "$WT_DIR" ]] || { mkdir -p .worktrees; git worktree add "$WT_DIR" "refs/tags/${TAG}" --detach; }

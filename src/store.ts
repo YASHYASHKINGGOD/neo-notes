@@ -506,7 +506,7 @@ export const useStore = create<Store>((set, get) => ({
           
           // Only update if we have valid saved data with content
           if (data && typeof data === 'object') {
-            const currentState = get();
+            // const currentState = get();
             const updates: any = {};
             
             // Only override if saved data has content
