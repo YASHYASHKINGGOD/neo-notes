@@ -56,18 +56,22 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
   if (!editor) return null;
 
   const fonts = [
+    // Neo-Brutalist Collection
+    'Space Grotesk, sans-serif',
+    'Archivo Black, sans-serif',
+    'Orbitron, monospace',
+    'Rajdhani, sans-serif',
+    'Exo 2, sans-serif',
+    'Chakra Petch, sans-serif',
+    'Russo One, sans-serif',
+    'Oswald, sans-serif',
+    'Barlow, sans-serif',
+    
+    // Modern Classics
     'Inter, system-ui, sans-serif',
-    'Roboto, sans-serif',
-    'Poppins, sans-serif',
-    'Open Sans, sans-serif',
-    'Lato, sans-serif',
-    'Montserrat, sans-serif',
-    'Source Sans Pro, sans-serif',
     'JetBrains Mono, monospace',
-    'Fira Code, monospace',
-    'Georgia, serif',
-    'Times New Roman, serif',
-    'Playfair Display, serif'
+    'Roboto, sans-serif',
+    'Poppins, sans-serif'
   ];
 
   const colors = [

@@ -38,7 +38,7 @@ export const defaultThemes: Theme[] = [
     highlightColor: '#fef3c7',
     linkColor: '#2563eb',
     tagColor: '#7c3aed',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif',
+    fontFamily: 'Space Grotesk, sans-serif',
   },
   {
     name: 'modern dark',
@@ -56,7 +56,7 @@ export const defaultThemes: Theme[] = [
     highlightColor: '#fbbf24',
     linkColor: '#60a5fa',
     tagColor: '#8b5cf6',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif',
+    fontFamily: 'Orbitron, monospace',
   },
   {
     name: 'warm beige',
@@ -74,7 +74,7 @@ export const defaultThemes: Theme[] = [
     highlightColor: '#b58900',
     linkColor: '#268bd2',
     tagColor: '#d33682',
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'Rajdhani, sans-serif',
   },
   {
     name: 'soft lavender',
@@ -92,7 +92,7 @@ export const defaultThemes: Theme[] = [
     highlightColor: '#ddd6fe',
     linkColor: '#4338ca',
     tagColor: '#be185d',
-    fontFamily: 'Poppins, sans-serif',
+    fontFamily: 'Exo 2, sans-serif',
   },
   {
     name: 'forest green',
@@ -110,7 +110,7 @@ export const defaultThemes: Theme[] = [
     highlightColor: '#fef3c7',
     linkColor: '#0891b2',
     tagColor: '#7c3aed',
-    fontFamily: 'Source Sans Pro, sans-serif',
+    fontFamily: 'Chakra Petch, sans-serif',
   },
 ];
 
@@ -266,19 +266,22 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({
                   onChange={(e) => updateColor('fontFamily', e.target.value)}
                   className="neo-input w-full text-sm"
                 >
-                  <option value="Inter, system-ui, sans-serif">Inter</option>
-                  <option value="Roboto, sans-serif">Roboto</option>
-                  <option value="Poppins, sans-serif">Poppins</option>
-                  <option value="Open Sans, sans-serif">Open Sans</option>
-                  <option value="Lato, sans-serif">Lato</option>
-                  <option value="Montserrat, sans-serif">Montserrat</option>
-                  <option value="Source Sans Pro, sans-serif">Source Sans Pro</option>
-                  <option value="JetBrains Mono, monospace">JetBrains Mono</option>
-                  <option value="Fira Code, monospace">Fira Code</option>
-                  <option value="SF Mono, Monaco, monospace">SF Mono</option>
-                  <option value="Georgia, serif">Georgia</option>
-                  <option value="Times New Roman, serif">Times New Roman</option>
-                  <option value="Playfair Display, serif">Playfair Display</option>
+                  {/* Neo-Brutalist Fonts */}
+                  <option value="Space Grotesk, sans-serif">🔥 Space Grotesk (Neo-Brutal)</option>
+                  <option value="Archivo Black, sans-serif">💪 Archivo Black (Bold)</option>
+                  <option value="Orbitron, monospace">🤖 Orbitron (Futuristic)</option>
+                  <option value="Rajdhani, sans-serif">⚡ Rajdhani (Sharp)</option>
+                  <option value="Exo 2, sans-serif">🚀 Exo 2 (Modern)</option>
+                  <option value="Chakra Petch, sans-serif">⚙️ Chakra Petch (Tech)</option>
+                  <option value="Russo One, sans-serif">🎯 Russo One (Impact)</option>
+                  <option value="Oswald, sans-serif">📐 Oswald (Geometric)</option>
+                  <option value="Barlow, sans-serif">🔧 Barlow (Industrial)</option>
+                  
+                  {/* Classic Options */}
+                  <option value="Inter, system-ui, sans-serif">📱 Inter (System)</option>
+                  <option value="JetBrains Mono, monospace">💻 JetBrains Mono (Code)</option>
+                  <option value="Roboto, sans-serif">🤍 Roboto (Clean)</option>
+                  <option value="Poppins, sans-serif">✨ Poppins (Friendly)</option>
                 </select>
               </div>
             </div>
