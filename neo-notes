@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Neo Notes Launcher
+echo "🚀 Opening Neo Notes..."
+
+# Check if server is running
+if curl -s http://localhost:5175 > /dev/null 2>&1; then
+    echo "✅ Server is running"
+else
+    echo "⚠️  Starting server..."
+    cd "$(dirname "$0")"
+    pnpm run dev &
+    sleep 4
+fi
+
+# Open in browser (Safari works better for localhost)
+echo "🌐 Opening in Safari..."
+open -a Safari http://localhost:5175
+
+echo "✅ Neo Notes is ready!"
+echo ""
+echo "Access at: http://localhost:5175"

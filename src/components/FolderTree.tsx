@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronRight, ChevronDown, Folder, FolderOpen, Plus, MoreHorizontal, Edit, Trash } from 'lucide-react';
-import { useStore, type Folder as FolderType } from '@/store';
+import { useStore, type Folder as FolderType } from '../store';
 
 interface FolderNodeProps {
   folder: FolderType;

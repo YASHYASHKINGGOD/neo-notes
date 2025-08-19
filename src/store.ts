@@ -479,24 +479,80 @@ export const useStore = create<Store>((set, get) => ({
     if (typeof window === 'undefined') return;
     
     try {
+      console.log('🔄 Loading from localStorage...');
+      
       // Load theme from localStorage
       const savedTheme = localStorage.getItem('rob-yyn-notes-theme');
       if (savedTheme) {
-        const theme = JSON.parse(savedTheme);
-        set({ currentTheme: theme });
-        get().applyThemeToCSS(theme);
+        try {
+          const theme = JSON.parse(savedTheme);
+          console.log('📱 Loaded theme:', theme.name);
+          set({ currentTheme: theme });
+          get().applyThemeToCSS(theme);
+        } catch (e) {
+          console.warn('Failed to parse saved theme');
+        }
       }
 
       // Load notes and folders from localStorage for web version
-      const savedNotes = localStorage.getItem('rob-yyn-notes-data');
-      if (savedNotes) {
-        const data = JSON.parse(savedNotes);
-        set({
-          notes: data.notes || [],
-          folders: data.folders || [],
-          selectedNoteId: data.selectedNoteId || null,
-          selectedFolderId: data.selectedFolderId || null
-        });
+      const savedData = localStorage.getItem('rob-yyn-notes-data');
+      if (savedData) {
+        try {
+          const data = JSON.parse(savedData);
+          console.log('📂 Found saved data:', { 
+            notes: data.notes?.length || 0, 
+            folders: data.folders?.length || 0 
+          });
+          
+          // Only update if we have valid saved data with content
+          if (data && typeof data === 'object') {
+            const currentState = get();
+            const updates: any = {};
+            
+            // Only override if saved data has content
+            if (data.notes && Array.isArray(data.notes) && data.notes.length > 0) {
+              // Convert date strings back to Date objects
+              const notesWithDates = data.notes.map((note: any) => ({
+                ...note,
+                createdAt: new Date(note.createdAt),
+                updatedAt: new Date(note.updatedAt)
+              }));
+              updates.notes = notesWithDates;
+              console.log('✅ Restored', data.notes.length, 'notes with proper dates');
+            }
+            
+            if (data.folders && Array.isArray(data.folders) && data.folders.length > 0) {
+              // Convert date strings back to Date objects
+              const foldersWithDates = data.folders.map((folder: any) => ({
+                ...folder,
+                createdAt: new Date(folder.createdAt),
+                updatedAt: new Date(folder.updatedAt)
+              }));
+              updates.folders = foldersWithDates;
+              console.log('✅ Restored', data.folders.length, 'folders with proper dates');
+            }
+            
+            // Always restore selections if they exist
+            if (data.selectedNoteId !== undefined) {
+              updates.selectedNoteId = data.selectedNoteId;
+            }
+            
+            if (data.selectedFolderId !== undefined) {
+              updates.selectedFolderId = data.selectedFolderId;
+            }
+            
+            if (Object.keys(updates).length > 0) {
+              set(updates);
+              console.log('✅ LocalStorage data restored');
+            } else {
+              console.log('ℹ️ No saved data to restore, keeping defaults');
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to parse saved data, keeping defaults');
+        }
+      } else {
+        console.log('ℹ️ No saved data found, using defaults');
       }
     } catch (error) {
       console.error('Failed to load from localStorage:', error);
@@ -518,6 +574,10 @@ export const useStore = create<Store>((set, get) => ({
         lastSaved: new Date().toISOString()
       };
       localStorage.setItem('rob-yyn-notes-data', JSON.stringify(dataToSave));
+      console.log('💾 Saved to localStorage:', { 
+        notes: state.notes.length, 
+        folders: state.folders.length 
+      });
     } catch (error) {
       console.error('Failed to save to localStorage:', error);
     }

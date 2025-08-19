@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useStore } from '@/store';
+import { useStore } from '../store';
 import { Palette, FolderPlus, List, Network } from 'lucide-react';
 import FolderTree from './FolderTree';
 
@@ -41,15 +41,29 @@ const NotesSidebar: React.FC = () => {
 
   const displayNotes = getDisplayNotes();
 
-  const formatDate = (date: Date) => {
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
-    if (days === 0) return 'today';
-    if (days === 1) return 'yesterday';
-    if (days < 7) return `${days} days ago`;
-    return date.toLocaleDateString().toLowerCase();
+  const formatDate = (date: Date | string) => {
+    try {
+      // Ensure we have a proper Date object
+      const dateObj = date instanceof Date ? date : new Date(date);
+      
+      // Check if it's a valid date
+      if (isNaN(dateObj.getTime())) {
+        console.warn('Invalid date provided to formatDate:', date);
+        return 'unknown';
+      }
+      
+      const now = new Date();
+      const diff = now.getTime() - dateObj.getTime();
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      
+      if (days === 0) return 'today';
+      if (days === 1) return 'yesterday';
+      if (days < 7) return `${days} days ago`;
+      return dateObj.toLocaleDateString().toLowerCase();
+    } catch (error) {
+      console.error('Error in formatDate:', error, 'Date value:', date);
+      return 'error';
+    }
   };
 
   const truncateContent = (content: string, maxLength: number = 50) => {

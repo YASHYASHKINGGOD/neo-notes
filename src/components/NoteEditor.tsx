@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useStore } from '@/store';
+import { useStore } from '../store';
 import RichTextEditor from './RichTextEditor';
 
 const NoteEditor: React.FC = () => {
