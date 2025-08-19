@@ -1,0 +1,30 @@
+import React from 'react';
+import { Button } from "@/components/ui/button";
+import { useStore } from "@/store";
+
+const CenterPanel: React.FC = () => {
+  const { tool, setTool } = useStore();
+  
+  const Item = ({ id, label }: { id: any; label: string }) => (
+    <Button
+      className={`neo-cta ${
+        tool === id ? "border-[var(--accent)] shadow-[4px_4px_0_0_#000]" : ""
+      }`}
+      onClick={() => setTool(id)}
+    >
+      {label}
+    </Button>
+  );
+
+  return (
+    <div className="neo-card fixed left-1/2 -translate-x-1/2 bottom-4 p-2 flex gap-2 z-50">
+      <Item id="highlight" label="highlight" />
+      <Item id="pen" label="pen" />
+      <Item id="freehand" label="freehand" />
+      <Item id="connector" label="connectors" />
+      <Item id="note" label="notes" />
+    </div>
+  );
+};
+
+export default CenterPanel;
