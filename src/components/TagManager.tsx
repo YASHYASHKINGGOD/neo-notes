@@ -78,7 +78,7 @@ const TagManager: React.FC<TagManagerProps> = ({
       {/* Add New Tag */}
       <div className="relative">
         <div className="flex items-center gap-1">
-          <div className="relative flex-1">
+          <div className="relative" style={{ width: '120px' }}>
             <input
               type="text"
               value={newTag}
