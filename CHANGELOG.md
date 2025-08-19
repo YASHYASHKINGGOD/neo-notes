@@ -2,6 +2,18 @@
 
 All notable changes to Neo-Notes will be documented in this file.
 
+## [2.0.0-beta.2] - 2025-08-19
+
+### 🎉 Final Fixes Applied
+- ✅ **Floating Toolbar**: Fixed BubbleMenu to appear on text selection
+- ✅ **Tag Deletion**: Confirmed X button on tags works for removal
+- ✅ **Dependencies**: Added @floating-ui/dom for proper BubbleMenu support
+
+### 🏁 Status: 100% Complete
+All 11 original user issues have been resolved. Application is now feature-complete and ready for production.
+
+---
+
 ## [2.0.0-beta.1] - 2025-08-19
 
 ### 🎉 Major Features Added

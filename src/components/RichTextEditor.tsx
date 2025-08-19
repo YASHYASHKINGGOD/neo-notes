@@ -513,7 +513,76 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         style={{ minHeight: '200px' }}
       />
       
-      {/* Floating toolbar functionality is now handled by the BubbleMenu extension */}
+      {/* Floating Bubble Menu on text selection */}
+      {editor && (
+        <BubbleMenu
+          editor={editor}
+          tippyOptions={{ duration: 100 }}
+          className="bubble-menu neo-container flex items-center gap-1 p-2 shadow-lg"
+        >
+          {/* Basic formatting */}
+          <button
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={`editor-btn ${editor.isActive('bold') ? 'active' : ''}`}
+            title="Bold"
+          >
+            <Bold size={14} />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={`editor-btn ${editor.isActive('italic') ? 'active' : ''}`}
+            title="Italic"
+          >
+            <Italic size={14} />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            className={`editor-btn ${editor.isActive('underline') ? 'active' : ''}`}
+            title="Underline"
+          >
+            <UnderlineIcon size={14} />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            className={`editor-btn ${editor.isActive('strike') ? 'active' : ''}`}
+            title="Strikethrough"
+          >
+            <Strikethrough size={14} />
+          </button>
+          
+          <div className="w-px h-6 bg-[var(--border-main)]" />
+          
+          <button
+            onClick={() => editor.chain().focus().toggleHighlight().run()}
+            className={`editor-btn ${editor.isActive('highlight') ? 'active' : ''}`}
+            title="Highlight"
+          >
+            <HighlightIcon size={14} />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            className={`editor-btn ${editor.isActive('code') ? 'active' : ''}`}
+            title="Code"
+          >
+            <Code size={14} />
+          </button>
+          
+          <div className="w-px h-6 bg-[var(--border-main)]" />
+          
+          <button
+            onClick={() => {
+              const url = window.prompt('Enter URL');
+              if (url) {
+                editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+              }
+            }}
+            className={`editor-btn ${editor.isActive('link') ? 'active' : ''}`}
+            title="Link"
+          >
+            <LinkIcon size={14} />
+          </button>
+        </BubbleMenu>
+      )}
       
       {/* Hidden full toolbar for advanced features - shown via button */}
       <div className="hidden" id="full-toolbar">
