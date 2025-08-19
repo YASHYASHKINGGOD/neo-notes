@@ -13,8 +13,7 @@ import Underline from '@tiptap/extension-underline';
 import FontFamily from '@tiptap/extension-font-family';
 import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
-// Temporarily disabled BubbleMenu due to import issues
-// import { BubbleMenu } from '@tiptap/react';
+// Using custom floating toolbar instead of BubbleMenu extension
 import { SlashCommandExtension, slashCommandSuggestion } from './SlashCommandExtension';
 import { 
   Bold, 
@@ -421,6 +420,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   onChange,
   className = ""
 }) => {
+  const [showFloatingMenu, setShowFloatingMenu] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const editor: any = useEditor({
     extensions: [
       StarterKit.configure({
@@ -478,6 +479,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
+    onSelectionUpdate: ({ editor }) => {
+      const { from, to, empty } = editor.state.selection;
+      
+      if (!empty) {
+        // Text is selected, show floating menu
+        const { view } = editor;
+        const start = view.coordsAtPos(from);
+        const end = view.coordsAtPos(to);
+        
+        setMenuPosition({
+          top: start.top - 50,
+          left: (start.left + end.left) / 2 - 100,
+        });
+        setShowFloatingMenu(true);
+      } else {
+        // No selection, hide menu
+        setShowFloatingMenu(false);
+      }
+    },
     editorProps: {
       attributes: {
         class: 'rich-text-editor',
@@ -514,7 +534,68 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         style={{ minHeight: '200px' }}
       />
       
-      {/* Floating toolbar functionality is now handled by the BubbleMenu extension */}
+      {/* Custom Floating Toolbar */}
+      {showFloatingMenu && editor && (
+        <div
+          className="fixed z-50 bg-[var(--bg-secondary)] border-2 border-[var(--border-main)] shadow-lg rounded-lg p-2 flex items-center gap-1"
+          style={{
+            top: `${menuPosition.top}px`,
+            left: `${menuPosition.left}px`,
+            boxShadow: '4px 4px 0 0 #000',
+          }}
+        >
+          <button
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={`editor-btn ${editor.isActive('bold') ? 'active' : ''}`}
+            title="Bold"
+          >
+            <Bold size={14} />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={`editor-btn ${editor.isActive('italic') ? 'active' : ''}`}
+            title="Italic"
+          >
+            <Italic size={14} />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            className={`editor-btn ${editor.isActive('underline') ? 'active' : ''}`}
+            title="Underline"
+          >
+            <UnderlineIcon size={14} />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            className={`editor-btn ${editor.isActive('strike') ? 'active' : ''}`}
+            title="Strikethrough"
+          >
+            <Strikethrough size={14} />
+          </button>
+          
+          <div className="w-px h-6 bg-[var(--border-main)]" />
+          
+          <button
+            onClick={() => editor.chain().focus().toggleHighlight().run()}
+            className={`editor-btn ${editor.isActive('highlight') ? 'active' : ''}`}
+            title="Highlight"
+          >
+            <HighlightIcon size={14} />
+          </button>
+          <button
+            onClick={() => {
+              const url = window.prompt('Enter URL');
+              if (url) {
+                editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+              }
+            }}
+            className={`editor-btn ${editor.isActive('link') ? 'active' : ''}`}
+            title="Link"
+          >
+            <LinkIcon size={14} />
+          </button>
+        </div>
+      )}
       
       {/* Hidden full toolbar for advanced features - shown via button */}
       <div className="hidden" id="full-toolbar">
