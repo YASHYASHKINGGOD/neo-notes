@@ -15,6 +15,7 @@ import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 // Using custom floating toolbar instead of BubbleMenu extension
 import { SlashCommandExtension, slashCommandSuggestion } from './SlashCommandExtension';
+import NotionLikeTable from './NotionLikeTable';
 import { 
   Bold, 
   Italic, 
@@ -34,7 +35,8 @@ import {
   Image as ImageIcon,
   Video,
   ChevronDown,
-  Zap
+  Zap,
+  Plus
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -50,17 +52,34 @@ interface RichTextEditorProps {
 
 // @ts-ignore - Keeping for future reference
 // const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
-const _EditorToolbar = ({ editor }: { editor: any }) => {
+const EditorToolbar = ({ editor }: { editor: any }) => {
   const [showFontSelector, setShowFontSelector] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showTableMenu, setShowTableMenu] = useState(false);
   
+  // Close dropdowns when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.dropdown-container')) {
+        setShowFontSelector(false);
+        setShowColorPicker(false);
+        setShowTableMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
   if (!editor) return null;
 
   const fonts = [
-    // Neo-Brutalist Collection
+    // Neo-Brutalist Collection (Space Grotesk first as default)
     'Space Grotesk, sans-serif',
-    'Archivo Black, sans-serif',
+    'Archivo Black, sans-serif', 
     'Orbitron, monospace',
     'Rajdhani, sans-serif',
     'Exo 2, sans-serif',
@@ -157,11 +176,43 @@ const _EditorToolbar = ({ editor }: { editor: any }) => {
     setShowTableMenu(false);
   };
 
+  const addTableRowBefore = () => {
+    editor.chain().focus().addRowBefore().run();
+    setShowTableMenu(false);
+  };
+
+  const addTableColumnBefore = () => {
+    editor.chain().focus().addColumnBefore().run();
+    setShowTableMenu(false);
+  };
+
+  const deleteTable = () => {
+    if (confirm('Delete entire table?')) {
+      editor.chain().focus().deleteTable().run();
+    }
+    setShowTableMenu(false);
+  };
+
+  const toggleHeaderRow = () => {
+    editor.chain().focus().toggleHeaderRow().run();
+    setShowTableMenu(false);
+  };
+
+  const mergeCells = () => {
+    editor.chain().focus().mergeCells().run();
+    setShowTableMenu(false);
+  };
+
+  const splitCell = () => {
+    editor.chain().focus().splitCell().run();
+    setShowTableMenu(false);
+  };
+
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b-2 border-[var(--border-main)]">
       {/* Font Family */}
-      <div className="relative">
+      <div className="relative dropdown-container">
         <button
           onClick={() => setShowFontSelector(!showFontSelector)}
           className="editor-btn flex items-center gap-1"
@@ -193,7 +244,7 @@ const _EditorToolbar = ({ editor }: { editor: any }) => {
       </div>
 
       {/* Color Picker */}
-      <div className="relative">
+      <div className="relative dropdown-container">
         <button
           onClick={() => setShowColorPicker(!showColorPicker)}
           className="editor-btn flex items-center gap-1"
@@ -356,7 +407,7 @@ const _EditorToolbar = ({ editor }: { editor: any }) => {
       <div className="w-px h-6 bg-[var(--border-main)]" />
 
       {/* Table Management */}
-      <div className="relative">
+      <div className="relative dropdown-container">
         <button
           onClick={() => setShowTableMenu(!showTableMenu)}
           className="editor-btn flex items-center gap-1"
@@ -366,36 +417,87 @@ const _EditorToolbar = ({ editor }: { editor: any }) => {
           <ChevronDown size={12} />
         </button>
         {showTableMenu && (
-          <div className="absolute top-8 left-0 z-50 neo-container p-2 min-w-[150px]">
+          <div className="absolute top-8 left-0 z-50 neo-container p-2 min-w-[180px] max-h-80 overflow-y-auto">
+            <div className="text-xs text-[var(--text-muted)] mb-2 font-semibold border-b border-[var(--text-muted)] pb-1">
+              Table Operations
+            </div>
             <button
               onClick={addTable}
-              className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded"
+              className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded mb-1"
             >
-              Insert Table
+              🔲 Insert Table
+            </button>
+            
+            <div className="text-xs text-[var(--text-muted)] mb-2 mt-3 font-semibold border-b border-[var(--text-muted)] pb-1">
+              Add Structure
+            </div>
+            <button
+              onClick={addTableRowBefore}
+              className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded mb-1"
+            >
+              ⬆️ Add Row Before
             </button>
             <button
               onClick={addTableRow}
-              className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded"
+              className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded mb-1"
             >
-              Add Row
+              ⬇️ Add Row After
+            </button>
+            <button
+              onClick={addTableColumnBefore}
+              className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded mb-1"
+            >
+              ⬅️ Add Column Before
             </button>
             <button
               onClick={addTableColumn}
-              className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded"
+              className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded mb-1"
             >
-              Add Column
+              ➡️ Add Column After
+            </button>
+            
+            <div className="text-xs text-[var(--text-muted)] mb-2 mt-3 font-semibold border-b border-[var(--text-muted)] pb-1">
+              Cell Operations
+            </div>
+            <button
+              onClick={mergeCells}
+              className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded mb-1"
+            >
+              🔗 Merge Cells
             </button>
             <button
-              onClick={deleteTableRow}
-              className="block w-full text-left p-2 text-xs hover:bg-[var(--accent-secondary)] hover:text-white rounded"
+              onClick={splitCell}
+              className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded mb-1"
             >
-              Delete Row
+              ✂️ Split Cell
+            </button>
+            <button
+              onClick={toggleHeaderRow}
+              className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded mb-1"
+            >
+              📋 Toggle Header
+            </button>
+            
+            <div className="text-xs text-[var(--text-muted)] mb-2 mt-3 font-semibold border-b border-[var(--text-muted)] pb-1">
+              Remove Structure
+            </div>
+            <button
+              onClick={deleteTableRow}
+              className="block w-full text-left p-2 text-xs hover:bg-[var(--accent-secondary)] hover:text-white rounded mb-1"
+            >
+              ❌ Delete Row
             </button>
             <button
               onClick={deleteTableColumn}
+              className="block w-full text-left p-2 text-xs hover:bg-[var(--accent-secondary)] hover:text-white rounded mb-1"
+            >
+              ❌ Delete Column
+            </button>
+            <button
+              onClick={deleteTable}
               className="block w-full text-left p-2 text-xs hover:bg-[var(--accent-secondary)] hover:text-white rounded"
             >
-              Delete Column
+              🗑️ Delete Table
             </button>
           </div>
         )}
@@ -445,8 +547,23 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [showFontSelector, setShowFontSelector] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
+  // Close floating menu dropdowns when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.floating-dropdown-container')) {
+        setShowFontSelector(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const fonts = [
-    // Neo-Brutalist Collection
+    // Neo-Brutalist Collection (Space Grotesk first as default)
     'Space Grotesk, sans-serif',
     'Archivo Black, sans-serif',
     'Orbitron, monospace',
@@ -581,11 +698,16 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div className={`neo-rich-editor ${className}`}>
+      {/* Main Toolbar Removed - Only floating toolbar on text selection */}
+      
       <EditorContent 
         editor={editor} 
         className="rich-text-content"
         style={{ minHeight: '200px' }}
       />
+      
+      {/* Notion-like table controls */}
+      {editor && <NotionLikeTable editor={editor} />}
       
       {/* Custom Floating Toolbar */}
       {showFloatingMenu && editor && (
@@ -598,7 +720,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           }}
         >
           {/* Font Selector */}
-          <div className="relative">
+          <div className="relative floating-dropdown-container">
             <button
               onClick={() => setShowFontSelector(!showFontSelector)}
               className="editor-btn flex items-center gap-1"
@@ -681,6 +803,27 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           >
             <LinkIcon size={14} />
           </button>
+          
+          {/* Table controls if inside a table */}
+          {editor.isActive('table') && (
+            <>
+              <div className="w-px h-6 bg-[var(--border-main)]" />
+              <button
+                onClick={() => editor.chain().focus().addColumnAfter().run()}
+                className="editor-btn"
+                title="Add Column"
+              >
+                <Plus size={14} />
+              </button>
+              <button
+                onClick={() => editor.chain().focus().addRowAfter().run()}
+                className="editor-btn"
+                title="Add Row"
+              >
+                <Plus size={14} />
+              </button>
+            </>
+          )}
         </div>
       )}
       

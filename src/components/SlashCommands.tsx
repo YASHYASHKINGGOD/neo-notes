@@ -11,7 +11,14 @@ import {
   Image,
   Video,
   Table,
-  Minus
+  Minus,
+  Plus,
+  X,
+  Grid3X3,
+  ArrowUp,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight
 } from 'lucide-react';
 
 export interface SlashCommand {
@@ -118,9 +125,37 @@ const SlashCommands = forwardRef<SlashCommandsRef, SlashCommandsProps>(({ editor
     {
       id: 'table',
       title: 'Table',
-      description: 'Insert a table',
+      description: 'Insert a new table',
       icon: <Table size={16} />,
       action: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+    },
+    {
+      id: 'table-simple',
+      title: 'Simple Table',
+      description: 'Insert a 2x2 table without header',
+      icon: <Grid3X3 size={16} />,
+      action: (editor) => editor.chain().focus().insertTable({ rows: 2, cols: 2, withHeaderRow: false }).run(),
+    },
+    {
+      id: 'table-add-row',
+      title: 'Add Table Row',
+      description: 'Add row after current row',
+      icon: <ArrowDown size={16} />,
+      action: (editor) => editor.chain().focus().addRowAfter().run(),
+    },
+    {
+      id: 'table-add-col',
+      title: 'Add Table Column',
+      description: 'Add column after current column',
+      icon: <ArrowRight size={16} />,
+      action: (editor) => editor.chain().focus().addColumnAfter().run(),
+    },
+    {
+      id: 'table-delete-row',
+      title: 'Delete Table Row',
+      description: 'Remove current row',
+      icon: <X size={16} />,
+      action: (editor) => editor.chain().focus().deleteRow().run(),
     },
     {
       id: 'divider',
@@ -141,16 +176,19 @@ const SlashCommands = forwardRef<SlashCommandsRef, SlashCommandsProps>(({ editor
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }: { event: KeyboardEvent }) => {
       if (event.key === 'ArrowUp') {
+        event.preventDefault();
         setSelectedIndex((prevIndex) => (prevIndex + commands.length - 1) % commands.length);
         return true;
       }
 
       if (event.key === 'ArrowDown') {
+        event.preventDefault();
         setSelectedIndex((prevIndex) => (prevIndex + 1) % commands.length);
         return true;
       }
 
       if (event.key === 'Enter') {
+        event.preventDefault();
         executeCommand(commands[selectedIndex]);
         return true;
       }
@@ -164,27 +202,29 @@ const SlashCommands = forwardRef<SlashCommandsRef, SlashCommandsProps>(({ editor
   }, []);
 
   return (
-    <div className="neo-container p-2 w-80 max-h-80 overflow-y-auto">
+    <div className="neo-container p-2 w-80 max-h-80 overflow-y-auto" tabIndex={0}>
       <div className="text-xs font-semibold mb-2 text-[var(--text-muted)] uppercase tracking-wide">
-        Quick Actions
+        Quick Actions (Use ↑↓ arrows, Enter to select)
       </div>
       {commands.map((command, index) => (
         <button
           key={command.id}
           onClick={() => executeCommand(command)}
-          className={`w-full flex items-center gap-3 p-2 text-left text-sm rounded hover:bg-[var(--bg-tertiary)] ${
-            index === selectedIndex ? 'bg-[var(--bg-tertiary)]' : ''
+          className={`w-full flex items-center gap-3 p-2 text-left text-sm rounded hover:bg-[var(--bg-tertiary)] transition-colors ${
+            index === selectedIndex ? 'bg-[var(--accent)] text-[var(--bg-main)]' : ''
           }`}
         >
           <div 
             className="flex-shrink-0"
-            style={{ color: 'var(--icon-color)' }}
+            style={{ color: index === selectedIndex ? 'var(--bg-main)' : 'var(--icon-color)' }}
           >
             {command.icon}
           </div>
           <div className="flex-1">
             <div className="font-medium">{command.title}</div>
-            <div className="text-xs text-[var(--text-muted)]">{command.description}</div>
+            <div className={`text-xs ${index === selectedIndex ? 'text-[var(--bg-main)] opacity-80' : 'text-[var(--text-muted)]'}`}>
+              {command.description}
+            </div>
           </div>
         </button>
       ))}
