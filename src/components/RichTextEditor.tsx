@@ -44,11 +44,13 @@ interface RichTextEditorProps {
   className?: string;
 }
 
-interface EditorToolbarProps {
-  editor: any;
-}
+// interface EditorToolbarProps {
+//   editor: any;
+// }
 
-const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
+// @ts-ignore - Keeping for future reference
+// const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
+const _EditorToolbar = ({ editor }: { editor: any }) => {
   const [showFontSelector, setShowFontSelector] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showTableMenu, setShowTableMenu] = useState(false);

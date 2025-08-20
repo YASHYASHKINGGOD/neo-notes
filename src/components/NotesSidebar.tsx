@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useStore } from '../store';
 import { Palette, FolderPlus } from 'lucide-react';
 import FolderTree from './FolderTree';
