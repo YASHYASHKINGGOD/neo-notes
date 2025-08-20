@@ -48,56 +48,69 @@ function App() {
     toggleThemeCustomizer,
     applyThemeToCSS,
     addNote,
-    initFromLocalStorage
+    initFromLocalStorage,
+    loadFromFile,
+    isElectron
   } = storeData;
 
   useEffect(() => {
     console.log('🚀 Neo Notes useEffect triggered - current isReady:', isReady);
     
-    try {
-      console.log('🔧 Initializing from localStorage...');
-      // Initialize from localStorage first
-      initFromLocalStorage();
-      console.log('✅ localStorage initialized');
-      
-      console.log('🔧 Applying initial theme...', currentTheme);
-      // Apply initial theme immediately
-      applyThemeToCSS(currentTheme);
-      console.log('✅ Theme applied');
-      
-      // Mark as ready after a short delay
-      console.log('🔧 Setting up timeout for ready state...');
-      const timeoutId = setTimeout(() => {
-        console.log('🔧 Timeout fired - Setting ready state...');
-        setIsReady(true);
-        console.log('✅ Full interface ready - isReady set to true');
-      }, 100);
-      
-      console.log('🔧 Timeout ID:', timeoutId);
-      
-      // Also try immediate backup in case timeout fails
-      const backupTimeoutId = setTimeout(() => {
-        console.log('🔧 Backup timeout - checking if still not ready...');
-        setIsReady(prev => {
-          console.log('🔧 Backup timeout - current isReady state:', prev);
-          if (!prev) {
-            console.log('🔧 Backup timeout - forcing ready state');
-            return true;
-          }
-          return prev;
-        });
-      }, 500);
-      
-      // Cleanup function
-      return () => {
-        console.log('🔧 Cleaning up timeouts...');
-        clearTimeout(timeoutId);
-        clearTimeout(backupTimeoutId);
-      };
-    } catch (err) {
-      logError('APP_INITIALIZATION', err);
-      setError(`Initialization failed: ${err}`);
-    }
+    const initializeStorage = async () => {
+      try {
+        console.log('🔧 Checking if running in Electron...');
+        if (isElectron()) {
+          console.log('🖥️ Running in Electron - Loading from file storage...');
+          await loadFromFile();
+          console.log('✅ File storage loaded');
+        } else {
+          console.log('🌐 Running in web - Loading from localStorage...');
+          initFromLocalStorage();
+          console.log('✅ localStorage initialized');
+        }
+        
+        console.log('🔧 Applying initial theme...', currentTheme);
+        // Apply initial theme immediately
+        applyThemeToCSS(currentTheme);
+        console.log('✅ Theme applied');
+        
+        // Mark as ready after a short delay
+        console.log('🔧 Setting up timeout for ready state...');
+        const timeoutId = setTimeout(() => {
+          console.log('🔧 Timeout fired - Setting ready state...');
+          setIsReady(true);
+          console.log('✅ Full interface ready - isReady set to true');
+        }, 100);
+        
+        console.log('🔧 Timeout ID:', timeoutId);
+        
+        // Also try immediate backup in case timeout fails
+        const backupTimeoutId = setTimeout(() => {
+          console.log('🔧 Backup timeout - checking if still not ready...');
+          setIsReady(prev => {
+            console.log('🔧 Backup timeout - current isReady state:', prev);
+            if (!prev) {
+              console.log('🔧 Backup timeout - forcing ready state');
+              return true;
+            }
+            return prev;
+          });
+        }, 500);
+        
+        // Cleanup function
+        return () => {
+          console.log('🔧 Cleaning up timeouts...');
+          clearTimeout(timeoutId);
+          clearTimeout(backupTimeoutId);
+        };
+      } catch (err) {
+        logError('APP_INITIALIZATION', err);
+        setError(`Initialization failed: ${err}`);
+      }
+    };
+    
+    // Call the async initialization
+    initializeStorage();
   }, []); // Empty dependency array
   
   // Separate effect to monitor isReady changes
