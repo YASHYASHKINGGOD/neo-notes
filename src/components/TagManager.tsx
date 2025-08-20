@@ -16,6 +16,7 @@ const TagManager: React.FC<TagManagerProps> = ({
 }) => {
   const [newTag, setNewTag] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showInput, setShowInput] = useState(false);
 
   // Get unique suggestions that aren't already added
   const suggestions = availableTags
@@ -31,6 +32,7 @@ const TagManager: React.FC<TagManagerProps> = ({
       onTagsChange([...tags, trimmedTag]);
       setNewTag('');
       setShowSuggestions(false);
+      setShowInput(false);
     }
   };
 
@@ -45,7 +47,19 @@ const TagManager: React.FC<TagManagerProps> = ({
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
       setNewTag('');
+      setShowInput(false);
     }
+  };
+
+  const handleShowInput = () => {
+    setShowInput(true);
+    // Focus the input after showing it
+    setTimeout(() => {
+      const input = document.querySelector('.tag-input') as HTMLInputElement;
+      if (input) {
+        input.focus();
+      }
+    }, 0);
   };
 
   return (
@@ -77,39 +91,78 @@ const TagManager: React.FC<TagManagerProps> = ({
 
       {/* Add New Tag */}
       <div className="relative">
-        <div className="flex items-center gap-1">
-          <div className="relative" style={{ width: '120px' }}>
-            <input
-              type="text"
-              value={newTag}
-              onChange={(e) => {
-                setNewTag(e.target.value);
-                setShowSuggestions(e.target.value.length > 0);
-              }}
-              onKeyDown={handleKeyPress}
-              onFocus={() => setShowSuggestions(newTag.length > 0)}
-              className="neo-input text-xs w-full pl-6"
-              placeholder="Add tag..."
-            />
-            <Hash 
-              size={12} 
-              className="absolute left-2 top-1/2 transform -translate-y-1/2"
-              style={{ color: 'var(--text-muted)' }}
-            />
-          </div>
+        {!showInput ? (
+          /* Add Tag Button */
           <button
-            onClick={() => addTag(newTag)}
-            disabled={!newTag.trim()}
-            className="neo-button px-2 py-1 text-xs"
-            title="Add tag"
+            onClick={handleShowInput}
+            className="neo-button-small flex items-center gap-1 px-2 py-1 text-xs"
+            style={{
+              background: 'var(--bg-tertiary)',
+              border: '1px dashed var(--border-main)',
+              color: 'var(--text-muted)',
+            }}
+            title="Add new tag"
           >
             <Plus size={12} />
+            add tag
           </button>
-        </div>
+        ) : (
+          /* Tag Input */
+          <div className="flex items-center gap-1">
+            <div className="relative" style={{ width: '140px' }}>
+              <input
+                type="text"
+                value={newTag}
+                onChange={(e) => {
+                  setNewTag(e.target.value);
+                  setShowSuggestions(e.target.value.length > 0);
+                }}
+                onKeyDown={handleKeyPress}
+                onFocus={() => setShowSuggestions(newTag.length > 0)}
+                onBlur={() => {
+                  // Hide input if empty after losing focus
+                  setTimeout(() => {
+                    if (!newTag.trim() && !showSuggestions) {
+                      setShowInput(false);
+                    }
+                  }, 200);
+                }}
+                className="tag-input neo-input text-xs w-full pl-6"
+                placeholder="Enter tag name..."
+                autoFocus
+              />
+              <Hash 
+                size={12} 
+                className="absolute left-2 top-1/2 transform -translate-y-1/2"
+                style={{ color: 'var(--text-muted)' }}
+              />
+            </div>
+            <button
+              onClick={() => addTag(newTag)}
+              disabled={!newTag.trim()}
+              className="neo-button px-2 py-1 text-xs"
+              title="Add tag"
+            >
+              <Plus size={12} />
+            </button>
+            <button
+              onClick={() => {
+                setShowInput(false);
+                setNewTag('');
+                setShowSuggestions(false);
+              }}
+              className="neo-button px-2 py-1 text-xs"
+              title="Cancel"
+              style={{ background: 'var(--bg-secondary)' }}
+            >
+              <X size={12} />
+            </button>
+          </div>
+        )}
 
         {/* Suggestions Dropdown */}
-        {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute top-8 left-0 right-0 z-50 neo-container p-1">
+        {showInput && showSuggestions && suggestions.length > 0 && (
+          <div className="absolute top-8 left-0 z-50 neo-container p-1 min-w-[140px]">
             {suggestions.map((suggestion) => (
               <button
                 key={suggestion}

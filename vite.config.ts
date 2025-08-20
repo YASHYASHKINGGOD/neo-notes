@@ -20,5 +20,31 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-tiptap': ['@tiptap/core', '@tiptap/react', '@tiptap/starter-kit'],
+          'vendor-tiptap-extensions': [
+            '@tiptap/extension-highlight',
+            '@tiptap/extension-link', 
+            '@tiptap/extension-table',
+            '@tiptap/extension-table-row',
+            '@tiptap/extension-table-cell',
+            '@tiptap/extension-table-header',
+            '@tiptap/extension-color',
+            '@tiptap/extension-text-style',
+            '@tiptap/extension-underline',
+            '@tiptap/extension-font-family',
+            '@tiptap/extension-image',
+            '@tiptap/extension-youtube'
+          ],
+          'vendor-ui': ['lucide-react'],
+          'vendor-store': ['zustand']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
   },
 })

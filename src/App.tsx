@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense, lazy } from 'react';
 import NotesSidebar from './components/NotesSidebar';
 import NoteEditor from './components/NoteEditor';
-import ThemeCustomizer from './components/ThemeCustomizer';
 import { useStore } from './store';
+
+// Lazy load heavy components
+const ThemeCustomizer = lazy(() => import('./components/ThemeCustomizer'));
 
 // Error logging utility
 const logError = (context: string, error: any) => {
@@ -200,12 +202,27 @@ function App() {
           try {
             console.log('🔧 Rendering ThemeCustomizer...');
             return (
-              <ThemeCustomizer
-                isOpen={isThemeCustomizerOpen}
-                onClose={toggleThemeCustomizer}
-                currentTheme={currentTheme}
-                onThemeChange={setTheme}
-              />
+              <Suspense fallback={
+                <div style={{ 
+                  position: 'fixed', 
+                  top: '20px', 
+                  right: '20px', 
+                  background: 'var(--bg-secondary)', 
+                  padding: '10px',
+                  border: '2px solid var(--border-main)',
+                  color: 'var(--text-main)',
+                  fontSize: '12px'
+                }}>
+                  Loading theme customizer...
+                </div>
+              }>
+                <ThemeCustomizer
+                  isOpen={isThemeCustomizerOpen}
+                  onClose={toggleThemeCustomizer}
+                  currentTheme={currentTheme}
+                  onThemeChange={setTheme}
+                />
+              </Suspense>
             );
           } catch (err) {
             logError('THEME_CUSTOMIZER_RENDER', err);

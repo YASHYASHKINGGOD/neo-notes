@@ -1,7 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { useStore } from '../store';
 import RichTextEditor from './RichTextEditor';
 import TagManager from './TagManager';
+import { Smile } from 'lucide-react';
+
+// Lazy load emoji picker
+const EmojiPicker = lazy(() => import('./EmojiPicker'));
 
 const NoteEditor: React.FC = () => {
   const { 
@@ -15,6 +19,7 @@ const NoteEditor: React.FC = () => {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
 
   const selectedNote = getSelectedNote();
@@ -58,6 +63,17 @@ const NoteEditor: React.FC = () => {
     }
   };
 
+  const handleEmojiSelect = (emoji: string) => {
+    if (selectedNote) {
+      updateNote(selectedNote.id, { icon: emoji });
+    }
+    setShowEmojiPicker(false);
+  };
+
+  const handleEmojiPickerClose = () => {
+    setShowEmojiPicker(false);
+  };
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -95,14 +111,31 @@ const NoteEditor: React.FC = () => {
       {/* Header */}
       <div className="p-4 flex items-center justify-between" style={{ borderBottom: '2px solid var(--border-main)' }}>
         <div className="flex-1">
-          <input
-            ref={titleRef}
-            type="text"
-            value={title}
-            onChange={handleTitleChange}
-            placeholder="untitled note"
-            className="neo-title-input"
-          />
+          <div className="flex items-center gap-2 mb-2">
+            {/* Note Icon */}
+            <button
+              onClick={() => setShowEmojiPicker(true)}
+              className="flex items-center justify-center w-8 h-8 hover:bg-[var(--bg-tertiary)] rounded transition-colors"
+              title="Change note icon"
+            >
+              {selectedNote.icon ? (
+                <span className="text-lg leading-none">{selectedNote.icon}</span>
+              ) : (
+                <Smile size={16} style={{ color: 'var(--text-muted)' }} />
+              )}
+            </button>
+            
+            {/* Title Input */}
+            <input
+              ref={titleRef}
+              type="text"
+              value={title}
+              onChange={handleTitleChange}
+              placeholder="untitled note"
+              className="neo-title-input flex-1"
+            />
+          </div>
+          
           <div className="date-text text-xs mt-1">
             last modified: {formatDate(selectedNote.updatedAt)}
           </div>
@@ -178,6 +211,26 @@ const NoteEditor: React.FC = () => {
           })()}
         </div>
       </div>
+      
+      {/* Emoji Picker for Note Icon */}
+      {showEmojiPicker && (
+        <Suspense fallback={
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="neo-container p-4">
+              <div className="text-center">
+                <div className="text-lg mb-2">📝</div>
+                <div className="text-sm">Loading icon picker...</div>
+              </div>
+            </div>
+          </div>
+        }>
+          <EmojiPicker
+            onSelect={handleEmojiSelect}
+            onClose={handleEmojiPickerClose}
+            currentIcon={selectedNote.icon}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

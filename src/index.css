@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Archivo+Black:wght@400&family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700;800;900&family=Chakra+Petch:wght@300;400;500;600;700&family=Russo+One:wght@400&family=Oswald:wght@300;400;500;600;700&family=Barlow:wght@300;400;500;600;700;800;900&display=swap');
+/* Fonts are now loaded in HTML for better performance */
 
 @tailwind base;
 @tailwind components;
@@ -74,6 +74,26 @@
   .neo-button:active {
     transform: translate(2px, 2px);
     box-shadow: var(--shadow-light);
+  }
+
+  .neo-button-small {
+    @apply px-2 py-1 font-medium transition-all duration-150 text-xs;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-main);
+    color: var(--text-main);
+    box-shadow: 1px 1px 0 0 #000;
+    cursor: pointer;
+  }
+
+  .neo-button-small:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 2px 2px 0 0 #000;
+    background: var(--bg-secondary);
+  }
+
+  .neo-button-small:active {
+    transform: translate(0, 0);
+    box-shadow: 1px 1px 0 0 #000;
   }
   
   .neo-button.danger {
@@ -239,6 +259,11 @@
   .rich-text-content .ProseMirror {
     outline: none;
     min-height: 300px;
+  }
+
+  /* Font family styling for content */
+  .rich-text-content .ProseMirror span[style*="font-family"] {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   .rich-text-content .ProseMirror p {

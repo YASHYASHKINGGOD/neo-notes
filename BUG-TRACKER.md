@@ -225,24 +225,19 @@ const addTable = () => {
 
 ## Current Outstanding Issues
 
-### 1. Tag Deletion Missing ❌ NOT IMPLEMENTED
-**Status**: PENDING  
-**Reported**: Current session  
+### 1. Tag Deletion Missing ✅ FIXED
+**Status**: RESOLVED  
+**Reported**: Previous session  
 **Description**: "I should be able to delete tags"
 
-**Current State**: TagManager allows adding tags but no deletion functionality
-**Requirements**: 
-- X button on each tag in TagManager
-- Confirmation dialog for tag deletion
-- Update note when tag removed
-
-**Estimated Effort**: 15-30 minutes
+**Solution Implemented**: Added X button functionality on tags with proper deletion
+**Test Status**: ✅ Verified working - tags can be deleted with X button
 
 ---
 
 ### 2. Floating Toolbar Not Appearing ❌ PARTIALLY IMPLEMENTED  
 **Status**: IN PROGRESS  
-**Reported**: Current session  
+**Reported**: Previous session  
 **Description**: "The toolbar does not come on our or selection of the text"
 
 **Current State**: BubbleMenu implementation has import conflicts
@@ -252,6 +247,85 @@ const addTable = () => {
 - Position toolbar correctly near selection
 
 **Estimated Effort**: 30-60 minutes
+
+---
+
+### 3. Visual Hierarchy Missing in Sidebar ❌ NEW ISSUE
+**Status**: PENDING  
+**Reported**: Current session (August 20, 2025)  
+**Description**: "Notes and folders don't have a visual hierarchy, bulleted list is not appearing"
+
+**Current State**: Flat folder structure without proper visual indentation
+**Requirements**:
+- Add proper visual hierarchy with indentation
+- Implement bulleted list appearance for nested items
+- Visual connecting lines or dots for parent-child relationships
+- Consistent spacing and alignment
+
+**Estimated Effort**: 45-60 minutes
+
+---
+
+### 4. Font Selection Not Working ❌ NEW ISSUE
+**Status**: PENDING  
+**Reported**: Current session (August 20, 2025)  
+**Description**: "I am not able to change the font"
+
+**Current State**: Font selection feature not functioning properly
+**Requirements**:
+- Fix font selection dropdown functionality
+- Ensure fonts apply correctly to text
+- Verify Google Fonts loading
+- Test font persistence
+
+**Estimated Effort**: 30-45 minutes
+
+---
+
+### 5. Default Folders Not Working Efficiently ❌ NEW ISSUE
+**Status**: PENDING  
+**Reported**: Current session (August 20, 2025)  
+**Description**: "The first 2 folders by default they don't work efficiently"
+
+**Current State**: Default folders have functionality issues
+**Requirements**:
+- Identify specific issues with default folders
+- Fix folder creation and interaction problems
+- Ensure proper folder management for initial folders
+
+**Estimated Effort**: 30-45 minutes
+
+---
+
+### 6. Add Tag UI/UX Improvement ❌ NEW ISSUE
+**Status**: PENDING  
+**Reported**: Current session (August 20, 2025)  
+**Description**: "Make the add tag a button and then a text bar I don't like the open text bar"
+
+**Current State**: Open text input for tag addition
+**Requirements**:
+- Convert to button-triggered tag addition
+- Show input field only when button is clicked
+- Improved tag addition workflow
+- Better visual design for tag input
+
+**Estimated Effort**: 20-30 minutes
+
+---
+
+### 7. Folder Icons and Emojis Support ❌ NEW ISSUE
+**Status**: PENDING  
+**Reported**: Current session (August 20, 2025)  
+**Description**: "Ability to add emojis and icons like in notion into folder icons"
+
+**Current State**: Basic folder icons without customization
+**Requirements**:
+- Emoji picker for folder icons
+- Icon selection system (similar to Notion)
+- Icon persistence and display
+- Custom folder icon management
+
+**Estimated Effort**: 60-90 minutes
 
 ---
 
@@ -302,11 +376,20 @@ const addTable = () => {
 
 **Session 1**: Fixed 3 major UI/UX issues (themes, hierarchy, HTML tags)  
 **Session 2**: Fixed 5 additional functionality issues (search, tabs, folders, tables, Tab key)  
-**Current Session**: 2 remaining issues identified and partially addressed
+**Session 3**: Identified 5 new critical issues requiring attention
 
-**Success Rate**: 9/11 issues fully resolved (82% completion rate)  
-**Remaining Work**: Estimated 1-2 hours to complete all outstanding issues
+**Current Success Rate**: 10/16 issues fully resolved (62% completion rate)  
+**New Issues Added**: 5 new bugs identified from user testing  
+**Remaining Work**: Estimated 4-6 hours to complete all outstanding issues
+
+**Priority Order**:
+1. Visual hierarchy in sidebar (critical UX)
+2. Font selection functionality (core feature)
+3. Tag UI/UX improvement (user experience)
+4. Default folders efficiency (stability)
+5. Folder icons/emojis (enhancement)
+6. Floating toolbar (advanced feature)
 
 ---
 
-*Last Updated: August 19, 2025*
+*Last Updated: August 20, 2025*

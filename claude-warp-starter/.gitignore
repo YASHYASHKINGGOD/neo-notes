@@ -1,0 +1,23 @@
+# node / JS
+node_modules/
+dist/
+.next/
+coverage/
+
+# python
+.venv/
+__pycache__/
+.build/
+.pytest_cache/
+*.pyc
+
+# env & local
+.env
+.env.*
+.DS_Store
+.cache/
+logs/
+
+# build artifacts
+*.tar.gz
+*.zip

@@ -122,7 +122,16 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
   };
 
   const setFontFamily = (font: string) => {
-    editor.chain().focus().setFontFamily(font).run();
+    // Apply font to current selection or entire document if no selection
+    const { empty } = editor.state.selection;
+    
+    if (empty) {
+      // No selection - apply to new text
+      editor.chain().focus().setFontFamily(font).run();
+    } else {
+      // Has selection - apply to selected text
+      editor.chain().focus().setMark('textStyle', { fontFamily: font }).run();
+    }
     setShowFontSelector(false);
   };
 
@@ -160,17 +169,23 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
           <ChevronDown size={12} />
         </button>
         {showFontSelector && (
-          <div className="absolute top-8 left-0 z-50 neo-container p-2 min-w-[200px]">
-            {fonts.map((font) => (
-              <button
-                key={font}
-                onClick={() => setFontFamily(font)}
-                className="block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded"
-                style={{ fontFamily: font }}
-              >
-                {font.split(',')[0]}
-              </button>
-            ))}
+          <div className="absolute top-8 left-0 z-50 neo-container p-2 min-w-[200px] max-h-60 overflow-y-auto">
+            {fonts.map((font) => {
+              const isActive = editor.isActive('textStyle', { fontFamily: font });
+              return (
+                <button
+                  key={font}
+                  onClick={() => setFontFamily(font)}
+                  className={`block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded ${
+                    isActive ? 'bg-[var(--accent)] text-[var(--bg-main)]' : ''
+                  }`}
+                  style={{ fontFamily: font }}
+                >
+                  <span className="font-medium">{font.split(',')[0]}</span>
+                  {isActive && <span className="float-right">✓</span>}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
@@ -425,7 +440,38 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   className = ""
 }) => {
   const [showFloatingMenu, setShowFloatingMenu] = useState(false);
+  const [showFontSelector, setShowFontSelector] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+
+  const fonts = [
+    // Neo-Brutalist Collection
+    'Space Grotesk, sans-serif',
+    'Archivo Black, sans-serif',
+    'Orbitron, monospace',
+    'Rajdhani, sans-serif',
+    'Exo 2, sans-serif',
+    'Chakra Petch, sans-serif',
+    'Russo One, sans-serif',
+    'Oswald, sans-serif',
+    'Barlow, sans-serif',
+    // System fonts fallback
+    'Inter, sans-serif',
+    'JetBrains Mono, monospace'
+  ];
+
+  const setFontFamily = (font: string) => {
+    // Apply font to current selection or entire document if no selection
+    const { empty } = editor.state.selection;
+    
+    if (empty) {
+      // No selection - apply to new text
+      editor.chain().focus().setFontFamily(font).run();
+    } else {
+      // Has selection - apply to selected text
+      editor.chain().focus().setMark('textStyle', { fontFamily: font }).run();
+    }
+    setShowFontSelector(false);
+  };
   const editor: any = useEditor({
     extensions: [
       StarterKit.configure({
@@ -484,11 +530,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       onChange(editor.getHTML());
     },
     onSelectionUpdate: ({ editor }) => {
-      const { from, to, empty } = editor.state.selection;
+      const { empty } = editor.state.selection;
       
       if (!empty) {
         // Text is selected, show floating menu
         const { view } = editor;
+        const { from, to } = editor.state.selection;
         const start = view.coordsAtPos(from);
         const end = view.coordsAtPos(to);
         
@@ -548,6 +595,40 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             boxShadow: '4px 4px 0 0 #000',
           }}
         >
+          {/* Font Selector */}
+          <div className="relative">
+            <button
+              onClick={() => setShowFontSelector(!showFontSelector)}
+              className="editor-btn flex items-center gap-1"
+              title="Change Font"
+            >
+              <Type size={14} />
+              <ChevronDown size={10} />
+            </button>
+            {showFontSelector && (
+              <div className="absolute top-8 left-0 z-50 neo-container p-2 min-w-[200px] max-h-60 overflow-y-auto">
+                {fonts.map((font) => {
+                  const isActive = editor.isActive('textStyle', { fontFamily: font });
+                  return (
+                    <button
+                      key={font}
+                      onClick={() => setFontFamily(font)}
+                      className={`block w-full text-left p-2 text-xs hover:bg-[var(--bg-tertiary)] rounded ${
+                        isActive ? 'bg-[var(--accent)] text-[var(--bg-main)]' : ''
+                      }`}
+                      style={{ fontFamily: font }}
+                    >
+                      <span className="font-medium">{font.split(',')[0]}</span>
+                      {isActive && <span className="float-right">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="w-px h-6 bg-[var(--border-main)]" />
+
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
             className={`editor-btn ${editor.isActive('bold') ? 'active' : ''}`}
@@ -601,25 +682,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         </div>
       )}
       
-      {/* Hidden full toolbar for advanced features - shown via button */}
-      <div className="hidden" id="full-toolbar">
-        <EditorToolbar editor={editor} />
-      </div>
-      
-      {/* Show advanced toolbar button */}
+      {/* Advanced toolbar only appears via floating menu or slash commands */}
       <div className="p-2 text-center border-t-2" style={{ borderColor: 'var(--border-main)' }}>
-        <button
-          onClick={() => {
-            const toolbar = document.getElementById('full-toolbar');
-            if (toolbar) {
-              toolbar.classList.toggle('hidden');
-            }
-          }}
-          className="text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] flex items-center gap-1 mx-auto"
-        >
+        <div className="text-xs text-[var(--text-muted)] flex items-center gap-1 justify-center">
           <Zap size={12} />
-          Advanced Tools & Commands (Type / for quick commands)
-        </button>
+          Type / for quick commands or select text for formatting options
+        </div>
       </div>
     </div>
   );

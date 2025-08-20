@@ -7,6 +7,7 @@ export interface Folder {
   name: string;
   parentId: string | null;
   color?: string;
+  icon?: string; // Emoji or icon identifier
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,6 +17,7 @@ export interface Note {
   title: string;
   content: string;
   folderId: string | null;
+  icon?: string; // Emoji or icon identifier
   tags: string[];
   links: string[]; // IDs of linked notes
   backlinks: string[]; // IDs of notes linking to this one
@@ -151,6 +153,7 @@ export const useStore = create<Store>((set, get) => ({
       name: "getting started",
       parentId: null,
       color: "#6b7280",
+      icon: "🚀",
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -159,6 +162,7 @@ export const useStore = create<Store>((set, get) => ({
       name: "projects",
       parentId: null,
       color: "#8b5cf6",
+      icon: "📁",
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -241,6 +245,7 @@ export const useStore = create<Store>((set, get) => ({
       name,
       parentId,
       color: "#6b7280",
+      icon: "📂", // Default folder icon
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -252,6 +257,14 @@ export const useStore = create<Store>((set, get) => ({
   },
 
   updateFolder: (id, updates) => {
+    const state = get();
+    const folderExists = state.folders.find(f => f.id === id);
+    
+    if (!folderExists) {
+      console.warn(`Folder with id ${id} not found`);
+      return;
+    }
+    
     set((state) => ({
       folders: state.folders.map((folder) =>
         folder.id === id 
@@ -259,17 +272,60 @@ export const useStore = create<Store>((set, get) => ({
           : folder
       ),
     }));
+    get().saveToFile();
+    get().saveToLocalStorage();
   },
 
   deleteFolder: (id) => {
+    // Don't delete default folders
+    const state = get();
+    const folder = state.folders.find(f => f.id === id);
+    
+    if (!folder) {
+      console.warn(`Folder with id ${id} not found`);
+      return;
+    }
+    
+    // Allow deletion of any folder - user has already confirmed
+    
+    // Move all notes in deleted folder to root
+    const notesToMove = state.notes.filter(note => note.folderId === id);
+    if (notesToMove.length > 0) {
+      set((state) => ({
+        notes: state.notes.map(note => 
+          note.folderId === id ? { ...note, folderId: null } : note
+        )
+      }));
+    }
+    
+    // Move child folders to root
+    const childFolders = state.folders.filter(f => f.parentId === id);
+    if (childFolders.length > 0) {
+      set((state) => ({
+        folders: state.folders.map(folder =>
+          folder.parentId === id ? { ...folder, parentId: null } : folder
+        )
+      }));
+    }
+    
     set((state) => ({
       folders: state.folders.filter((folder) => folder.id !== id),
       selectedFolderId: state.selectedFolderId === id ? null : state.selectedFolderId,
     }));
+    get().saveToFile();
+    get().saveToLocalStorage();
   },
 
   selectFolder: (id) => {
-    set({ selectedFolderId: id });
+    const state = get();
+    
+    // Validate folder exists (unless it's null for root)
+    if (id !== null && !state.folders.find(f => f.id === id)) {
+      console.warn(`Folder with id ${id} not found`);
+      return;
+    }
+    
+    set({ selectedFolderId: id, selectedNoteId: null });
     get().saveToLocalStorage();
   },
 

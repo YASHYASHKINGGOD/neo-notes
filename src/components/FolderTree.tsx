@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
-import { ChevronRight, ChevronDown, Folder, FolderOpen, Plus, MoreHorizontal, Edit, Trash } from 'lucide-react';
+import React, { useState, Suspense, lazy } from 'react';
+import { ChevronRight, ChevronDown, Folder, FolderOpen, Plus, MoreHorizontal, Edit, Trash, Smile } from 'lucide-react';
 import { useStore, type Folder as FolderType } from '../store';
+
+// Lazy load emoji picker for better performance
+const EmojiPicker = lazy(() => import('./EmojiPicker'));
 
 interface FolderNodeProps {
   folder: FolderType;
@@ -9,6 +12,7 @@ interface FolderNodeProps {
   onSelect: (id: string) => void;
   onCreateChild: (parentId: string) => void;
   onEdit: (folder: FolderType) => void;
+  onEditIcon?: (folder: FolderType) => void;
   onDelete: (id: string) => void;
   onSelectNote: (id: string) => void;
   selectedNoteId: string | null;
@@ -21,6 +25,7 @@ const FolderNode: React.FC<FolderNodeProps> = ({
   onSelect,
   onCreateChild,
   onEdit,
+  onEditIcon,
   onDelete,
   onSelectNote,
   selectedNoteId,
@@ -88,6 +93,13 @@ const FolderNode: React.FC<FolderNodeProps> = ({
     setShowMenu(false);
   };
 
+  const handleEditIcon = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Pass to parent component's handleEditIcon
+    if (onEditIcon) onEditIcon(folder);
+    setShowMenu(false);
+  };
+
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete(folder.id);
@@ -98,12 +110,41 @@ const FolderNode: React.FC<FolderNodeProps> = ({
     <div className="select-none">
       {/* Folder Item */}
       <div
-        className={`folder-item flex items-center gap-2 p-2 cursor-pointer relative group ${
-          isSelected ? 'bg-[var(--accent)] text-[var(--bg-main)]' : 'hover:bg-[var(--bg-tertiary)]'
+        className={`folder-item flex items-center gap-2 p-1.5 cursor-pointer relative group rounded-sm transition-colors ${
+          isSelected 
+            ? 'bg-[var(--accent)] text-[var(--bg-main)]' 
+            : 'hover:bg-[var(--bg-main)] hover:shadow-sm'
         }`}
-        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        style={{ paddingLeft: `${level * 16 + 6}px`, marginBottom: '1px' }}
         onClick={handleSelect}
       >
+        {/* Connecting lines for folders */}
+        {level > 0 && (
+          <>
+            <div
+              className="absolute"
+              style={{
+                left: `${level * 16 - 8}px`,
+                top: '0',
+                bottom: '50%',
+                width: '1px',
+                backgroundColor: 'var(--border-main)',
+                opacity: 0.3
+              }}
+            />
+            <div
+              className="absolute"
+              style={{
+                left: `${level * 16 - 8}px`,
+                top: '50%',
+                width: '8px',
+                height: '1px',
+                backgroundColor: 'var(--border-main)',
+                opacity: 0.3
+              }}
+            />
+          </>
+        )}
         {/* Expand/Collapse Button */}
         {hasChildren && (
           <button
@@ -119,11 +160,17 @@ const FolderNode: React.FC<FolderNodeProps> = ({
         {!hasChildren && <div className="w-6" />}
         
         {/* Folder Icon */}
-        <div style={{ color: folder.color || 'var(--accent)' }}>
-          {isExpanded && hasChildren ? (
-            <FolderOpen size={16} />
+        <div className="flex items-center justify-center" style={{ width: '20px', height: '20px' }}>
+          {folder.icon ? (
+            <span className="text-base leading-none" style={{ fontSize: '16px' }}>{folder.icon}</span>
           ) : (
-            <Folder size={16} />
+            <div style={{ color: folder.color || 'var(--accent)' }}>
+              {isExpanded && hasChildren ? (
+                <FolderOpen size={16} />
+              ) : (
+                <Folder size={16} />
+              )}
+            </div>
           )}
         </div>
         
@@ -173,6 +220,13 @@ const FolderNode: React.FC<FolderNodeProps> = ({
               rename
             </button>
             <button
+              onClick={handleEditIcon}
+              className="w-full flex items-center gap-2 p-2 text-left text-xs hover:bg-[var(--bg-tertiary)] rounded"
+            >
+              <Smile size={12} />
+              change icon
+            </button>
+            <button
               onClick={handleDelete}
               className="w-full flex items-center gap-2 p-2 text-left text-xs hover:bg-[var(--accent-secondary)] hover:text-white rounded"
             >
@@ -187,43 +241,76 @@ const FolderNode: React.FC<FolderNodeProps> = ({
       {isExpanded && (
         <div className="folder-children">
           {/* Notes in this folder */}
-          {notesInFolder.map((note) => (
+          {notesInFolder.map((note, index) => (
             <div
               key={note.id}
               onClick={() => onSelectNote(note.id)}
-              className={`neo-note-item cursor-pointer ${
-                selectedNoteId === note.id ? 'active' : ''
+              className={`cursor-pointer flex items-start gap-2 p-1.5 rounded-sm transition-colors ${
+                selectedNoteId === note.id 
+                  ? 'bg-[var(--accent)] text-[var(--bg-main)]' 
+                  : 'hover:bg-[var(--bg-main)] hover:shadow-sm'
               }`}
               style={{ 
-                paddingLeft: `${(level + 1) * 16 + 24}px`,
-                marginLeft: '0',
-                marginBottom: '4px',
-                borderLeft: `2px solid var(--border-main)`,
-                borderRadius: '4px',
+                paddingLeft: `${(level + 1) * 16 + 12}px`,
+                marginBottom: '1px',
                 position: 'relative'
               }}
             >
-              {/* Note icon */}
-              <div 
-                style={{ 
-                  position: 'absolute',
-                  left: `${(level + 1) * 16 + 4}px`,
-                  top: '8px',
-                  width: '12px',
-                  height: '12px',
-                  background: 'var(--text-muted)',
-                  borderRadius: '2px'
+              {/* Connecting lines for visual hierarchy */}
+              <div
+                className="absolute"
+                style={{
+                  left: `${(level + 1) * 16 - 2}px`,
+                  top: '0',
+                  bottom: index === notesInFolder.length - 1 ? '50%' : '0',
+                  width: '1px',
+                  backgroundColor: 'var(--border-main)',
+                  opacity: 0.3
+                }}
+              />
+              <div
+                className="absolute"
+                style={{
+                  left: `${(level + 1) * 16 - 2}px`,
+                  top: '50%',
+                  width: '8px',
+                  height: '1px',
+                  backgroundColor: 'var(--border-main)',
+                  opacity: 0.3
                 }}
               />
               
-              <div className="font-semibold text-sm mb-1 truncate">
-                {note.title || 'untitled'}
+              {/* Note icon or bullet point */}
+              <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '16px', height: '16px' }}>
+                {note.icon ? (
+                  <span className="text-sm leading-none">{note.icon}</span>
+                ) : (
+                  <div 
+                    style={{ 
+                      width: '6px',
+                      height: '6px',
+                      backgroundColor: selectedNoteId === note.id ? 'var(--bg-main)' : 'var(--accent)',
+                      borderRadius: '50%',
+                    }}
+                  />
+                )}
               </div>
-              <div className="date-text text-xs mb-2 note-date">
-                {formatDate(note.updatedAt)}
-              </div>
-              <div className="text-xs note-preview" style={{ opacity: 0.7 }}>
-                {truncateContent(note.content)}
+              
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm mb-1 truncate">
+                  {note.title || 'untitled'}
+                </div>
+                <div className="text-xs mb-1" style={{ 
+                  color: selectedNoteId === note.id ? 'inherit' : 'var(--text-muted)',
+                  opacity: 0.8 
+                }}>
+                  {formatDate(note.updatedAt)}
+                </div>
+                <div className="text-xs truncate" style={{ 
+                  opacity: selectedNoteId === note.id ? 0.8 : 0.6 
+                }}>
+                  {truncateContent(note.content)}
+                </div>
               </div>
             </div>
           ))}
@@ -240,6 +327,7 @@ const FolderNode: React.FC<FolderNodeProps> = ({
                 onSelect={onSelect}
                 onCreateChild={onCreateChild}
                 onEdit={onEdit}
+                onEditIcon={onEditIcon}
                 onDelete={onDelete}
                 onSelectNote={onSelectNote}
                 selectedNoteId={selectedNoteId}
@@ -273,6 +361,8 @@ const FolderTree: React.FC<FolderTreeProps> = ({
   const { folders } = useStore();
   const [editingFolder, setEditingFolder] = useState<FolderType | null>(null);
   const [editName, setEditName] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [editingIconFolder, setEditingIconFolder] = useState<FolderType | null>(null);
 
   // Get root folders (no parent)
   const rootFolders = folders.filter(f => f.parentId === null);
@@ -299,6 +389,24 @@ const FolderTree: React.FC<FolderTreeProps> = ({
     if (window.confirm('Delete this folder? Notes inside will be moved to root.')) {
       onDeleteFolder(id);
     }
+  };
+
+  const handleEditIcon = (folder: FolderType) => {
+    setEditingIconFolder(folder);
+    setShowEmojiPicker(true);
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    if (editingIconFolder) {
+      onEditFolder(editingIconFolder.id, { icon: emoji });
+    }
+    setShowEmojiPicker(false);
+    setEditingIconFolder(null);
+  };
+
+  const handleEmojiPickerClose = () => {
+    setShowEmojiPicker(false);
+    setEditingIconFolder(null);
   };
 
   // Close menu when clicking outside
@@ -355,12 +463,33 @@ const FolderTree: React.FC<FolderTreeProps> = ({
               onSelect={onSelectFolder}
               onCreateChild={onCreateFolder}
               onEdit={handleEditFolder}
+              onEditIcon={handleEditIcon}
               onDelete={handleDeleteFolder}
               onSelectNote={onSelectNote}
               selectedNoteId={selectedNoteId}
             />
           ))}
       </div>
+
+      {/* Emoji Picker */}
+      {showEmojiPicker && editingIconFolder && (
+        <Suspense fallback={
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="neo-container p-4">
+              <div className="text-center">
+                <div className="text-lg mb-2">🎨</div>
+                <div className="text-sm">Loading emoji picker...</div>
+              </div>
+            </div>
+          </div>
+        }>
+          <EmojiPicker
+            onSelect={handleEmojiSelect}
+            onClose={handleEmojiPickerClose}
+            currentIcon={editingIconFolder.icon}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };
